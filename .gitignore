@@ -1,0 +1,16 @@
+# ไม่นำข้อมูล Database ขึ้น Git เพราะไฟล์มีขนาดใหญ่และเปลี่ยนแปลงตลอดเวลา
+mysql_data/
+
+# ไม่นำข้อมูล Node-RED ขึ้น Git เพื่อป้องกันพวกไฟล์ credentials (รหัสผ่าน) หลุด
+nodered_data/
+
+# ไม่นำไฟล์ Data และ Log ของ MQTT ขึ้น Git (แต่เราจะยังให้ Git เก็บโฟลเดอร์ mosquitto/config/ ไว้อยู่)
+mosquitto/data/
+mosquitto/log/
+
+# ไฟล์ระบบของ OS
+.DS_Store
+Thumbs.db
+
+# docker
+.dockerignore
