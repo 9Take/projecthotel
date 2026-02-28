@@ -42,7 +42,7 @@ dashboard:
   #  restart: unless-stopped
 
   # 3. MySQL (Database)
-  mysql:
+mysql:
     image: mysql:latest
     container_name: hotel_database
     environment:
