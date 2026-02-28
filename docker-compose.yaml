@@ -30,8 +30,8 @@ services:
     image: mysql:latest
     container_name: hotel_database
     environment:
-      - MYSQL_ROOT_PASSWORD=hotel123 # ตั้งรหัสผ่านให้ root
-      - MYSQL_DATABASE=hotel_db # ให้สร้างฐานข้อมูลชื่อ hotel_db เตรียมไว้เลย
+      - MYSQL_ROOT_PASSWORD=${DB_ROOT_PASSWORD}
+      - MYSQL_DATABASE=${DB_NAME}
     ports:
       - "3306:3306"
     volumes:
