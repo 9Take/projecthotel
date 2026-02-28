@@ -14,16 +14,16 @@ services:
     restart: unless-stopped
 
   # 2. Node-RED (Logic & Dashboard)
-  nodered:
-    image: nodered/node-red:latest
-    container_name: hotel_nodered
-    environment:
-      - TZ=Asia/Bangkok
-    ports:
-      - "1880:1880"
-    volumes:
-      - ./nodered_data:/data
-    restart: unless-stopped
+ # nodered:
+  #  image: nodered/node-red:latest
+  #  container_name: hotel_nodered
+  #  environment:
+  #    - TZ=Asia/Bangkok
+  #  ports:
+  #    - "1880:1880"
+  #  volumes:
+  #    - ./nodered_data:/data
+  #  restart: unless-stopped
 
   # 3. MySQL (Database)
   mysql:
