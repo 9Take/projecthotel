@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  # 1. MQTT Broker (Mosquitto)
+  mqtt:
+    image: eclipse-mosquitto:latest
+    container_name: hotel_mqtt
+    ports:
+      - "1883:1883"
+    volumes:
+      - ./mosquitto/config:/mosquitto/config
+      - ./mosquitto/data:/mosquitto/data
+      - ./mosquitto/log:/mosquitto/log
+    restart: unless-stopped
+
+  # 2. Node-RED (Logic & Dashboard)
+  nodered:
+    image: nodered/node-red:latest
+    container_name: hotel_nodered
+    environment:
+      - TZ=Asia/Bangkok
+    ports:
+      - "1880:1880"
+    volumes:
+      - ./nodered_data:/data
+    restart: unless-stopped
+
+  # 3. MySQL (Database)
+  mysql:
+    image: mysql:latest
+    container_name: hotel_database
+    environment:
+      - MYSQL_ROOT_PASSWORD=hotel123 # ตั้งรหัสผ่านให้ root
+      - MYSQL_DATABASE=hotel_db # ให้สร้างฐานข้อมูลชื่อ hotel_db เตรียมไว้เลย
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./mysql_data:/var/lib/mysql # ผูก Volume เพื่อไม่ให้ข้อมูลหายตอนคอนเทนเนอร์ดับ
+    restart: unless-stopped
