@@ -13,6 +13,22 @@ services:
       - ./mosquitto/log:/mosquitto/log
     restart: unless-stopped
 
+dashboard:
+    build: ./hotel-dashboard
+    container_name: hotel_dashboard
+    ports:
+      - "3000:3000"
+    volumes:
+      # 1. เชื่อมโฟลเดอร์โค้ดของเรา เข้ากับโฟลเดอร์ใน Container (แก้ปุ๊บเปลี่ยนปั๊บ)
+      - ./hotel-dashboard:/usr/src/app
+      # 2. ป้องกันไม่ให้โฟลเดอร์เครื่องเรา ไปทับ node_modules ที่เพิ่งลงเสร็จใน Container (สำคัญมาก!)
+      - /usr/src/app/node_modules
+    restart: unless-stopped
+    depends_on:
+      - mqtt
+    # 3. ใช้ฟีเจอร์เทพของ Node 20 คือ --watch (เวลาไฟล์แก้ปุ๊บ มันจะรีสตาร์ทเซิร์ฟเวอร์ตัวเองให้เลย ไม่ต้องลง nodemon)
+    command: node --watch server.js
+
   # 2. Node-RED (Logic & Dashboard)
  # nodered:
   #  image: nodered/node-red:latest

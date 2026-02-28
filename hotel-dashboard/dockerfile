@@ -1,0 +1,21 @@
+# ใช้ Node.js เวอร์ชั่น 20 (Standard Debian-based) เพื่อความเข้ากันได้ 100% กับทุก Package
+FROM node:20
+
+# ตั้งค่า Timezone ให้เป็นเวลาไทย (สำคัญมากเวลาเซฟ Log ลง Database)
+ENV TZ=Asia/Bangkok
+
+# ตั้งค่าโฟลเดอร์ทำงานข้างในคอนเทนเนอร์
+WORKDIR /usr/src/app
+
+# ก๊อปปี้ไฟล์ package.json ไปก่อนเพื่อติดตั้งไลบรารี
+COPY package*.json ./
+RUN npm install
+
+# ก๊อปปี้โค้ดทั้งหมดตามเข้าไป
+#COPY . .
+
+# เปิดพอร์ต 3000
+EXPOSE 3000
+
+# รันเซิร์ฟเวอร์
+CMD ["node", "server.js"]
