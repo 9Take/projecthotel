@@ -7,6 +7,7 @@ nodered_data/
 # ไม่นำไฟล์ Data และ Log ของ MQTT ขึ้น Git (แต่เราจะยังให้ Git เก็บโฟลเดอร์ mosquitto/config/ ไว้อยู่)
 mosquitto/data/
 mosquitto/log/
+mosquitto/congif/passwd
 
 # ไฟล์ระบบของ OS
 .DS_Store
