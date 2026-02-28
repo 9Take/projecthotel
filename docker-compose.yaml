@@ -1,7 +1,7 @@
 version: '3.8'
 
 services:
-  # 1. MQTT Broker (Mosquitto)
+  # 1. MQTT Broker
   mqtt:
     image: eclipse-mosquitto:latest
     container_name: hotel_mqtt
@@ -13,43 +13,52 @@ services:
       - ./mosquitto/log:/mosquitto/log
     restart: unless-stopped
 
-dashboard:
+  # 2. Custom Dashboard (Node.js)
+  dashboard:
     build: ./hotel-dashboard
     container_name: hotel_dashboard
     ports:
       - "3000:3000"
     volumes:
-      # 1. เชื่อมโฟลเดอร์โค้ดของเรา เข้ากับโฟลเดอร์ใน Container (แก้ปุ๊บเปลี่ยนปั๊บ)
       - ./hotel-dashboard:/usr/src/app
-      # 2. ป้องกันไม่ให้โฟลเดอร์เครื่องเรา ไปทับ node_modules ที่เพิ่งลงเสร็จใน Container (สำคัญมาก!)
       - /usr/src/app/node_modules
     restart: unless-stopped
     depends_on:
       - mqtt
-    # 3. ใช้ฟีเจอร์เทพของ Node 20 คือ --watch (เวลาไฟล์แก้ปุ๊บ มันจะรีสตาร์ทเซิร์ฟเวอร์ตัวเองให้เลย ไม่ต้องลง nodemon)
     command: node --watch server.js
 
-  # 2. Node-RED (Logic & Dashboard)
- # nodered:
-  #  image: nodered/node-red:latest
-  #  container_name: hotel_nodered
-  #  environment:
-  #    - TZ=Asia/Bangkok
-  #  ports:
-  #    - "1880:1880"
-  #  volumes:
-  #    - ./nodered_data:/data
-  #  restart: unless-stopped
-
-  # 3. MySQL (Database)
-mysql:
+  # 3. MySQL Database
+  mysql:
     image: mysql:latest
     container_name: hotel_database
     environment:
+      # ดึงรหัสผ่านจากไฟล์ .env ที่เราทำไว้
       - MYSQL_ROOT_PASSWORD=${DB_ROOT_PASSWORD}
       - MYSQL_DATABASE=${DB_NAME}
     ports:
       - "3306:3306"
     volumes:
-      - ./mysql_data:/var/lib/mysql # ผูก Volume เพื่อไม่ให้ข้อมูลหายตอนคอนเทนเนอร์ดับ
+      - ./mysql_data:/var/lib/mysql
     restart: unless-stopped
+ # 2. Node-RED (Logic & Dashboard)
+
+ # nodered:
+
+  #  image: nodered/node-red:latest
+
+  #  container_name: hotel_nodered
+
+  #  environment:
+
+  #    - TZ=Asia/Bangkok
+
+  #  ports:
+
+  #    - "1880:1880"
+
+  #  volumes:
+
+  #    - ./nodered_data:/data
+
+  #  restart: unless-stopped
+
