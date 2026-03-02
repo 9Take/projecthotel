@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lumina IOT Dashboard</title>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #f8f9fa;
+            --sidebar-bg: #ffffff;
+            --text-main: #1a1f36;
+            --text-muted: #8792a2;
+            --primary: #1a1f36;
+            --success: #10b981;
+            --success-bg: #d1fae5;
+            --danger: #ef4444;
+            --danger-bg: #fee2e2;
+            --border: #e5e7eb;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 260px;
+            background: var(--sidebar-bg);
+            border-right: 1px solid var(--border);
+            padding: 20px 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .logo {
+            padding: 0 20px 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 700;
+            font-size: 18px;
+        }
+
+        .logo-icon {
+            background: #1a1f36;
+            color: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+
+        .menu-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-muted);
+            letter-spacing: 1px;
+            padding: 20px 20px 10px;
+            text-transform: uppercase;
+        }
+
+        .room-item {
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            transition: 0.2s;
+            border-left: 3px solid transparent;
+        }
+
+        .room-item:hover {
+            background: #f3f4f6;
+        }
+
+        .room-item.active {
+            background: #f3f4f6;
+            border-left-color: var(--primary);
+            font-weight: 600;
+        }
+
+        .badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .badge.occupied {
+            background: var(--success-bg);
+            color: var(--success);
+        }
+
+        .badge.vacant {
+            background: #e0e7ff;
+            color: #4f46e5;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .topbar {
+            padding: 15px 30px;
+            border-bottom: 1px solid var(--border);
+            background: #fff;
+            font-size: 14px;
+            color: var(--text-muted);
+            font-weight: 500;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .content-body {
+            padding: 40px;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .room-header {
+            margin-bottom: 30px;
+        }
+
+        .room-title {
+            font-size: 32px;
+            font-weight: 700;
+            margin: 0 0 10px 0;
+        }
+
+        .room-subtitle {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--success);
+            display: inline-block;
+            margin-right: 5px;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 30px;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 30px;
+        }
+
+        .tab {
+            padding: 10px 0;
+            cursor: pointer;
+            color: var(--text-muted);
+            font-weight: 500;
+            border-bottom: 2px solid transparent;
+        }
+
+        .tab.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+
+        /* Dashboard Grid */
+        .grid-layout {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 30px;
+        }
+
+        .card {
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 20px;
+        }
+
+        .card-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .card-subtitle {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-top: 5px;
+        }
+
+        /* Power Indicator */
+        .power-box {
+            background: #f9fafb;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 10px 15px;
+            text-align: right;
+        }
+
+        .power-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        .power-value {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        /* Table */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        th,
+        td {
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border);
+            text-align: left;
+        }
+
+        th {
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .tag-badge {
+            background: #f3f4f6;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-family: monospace;
+            color: var(--text-muted);
+        }
+
+        /* Access Control (Tab 2) */
+        .access-control-area {
+            display: none;
+        }
+
+        .lock-container {
+            background: #f9fafb;
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 40px;
+            text-align: center;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .lock-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: var(--danger);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            font-size: 30px;
+        }
+
+        .lock-icon.unlocked {
+            background: var(--success);
+        }
+
+        .btn-group {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            border: 1px solid var(--border);
+            font-size: 14px;
+            transition: 0.2s;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .btn-primary:hover {
+            background: #333;
+        }
+
+        .btn-outline {
+            background: white;
+            color: var(--text-main);
+        }
+
+        .btn-outline:hover {
+            background: #f3f4f6;
+        }
+
+        .lock-badge {
+            background: var(--danger);
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .lock-badge.unlocked {
+            background: var(--success);
+        }
+    </style>
+</head>
+
+<body>
+
+    <aside class="sidebar">
+        <div class="logo">
+            <div class="logo-icon">🏢</div>
+            <div>
+                <div>Lumina</div>
+                <div style="font-size: 10px; color: var(--text-muted); font-weight: 500;">IOT DASHBOARD</div>
+            </div>
+        </div>
+        <div class="menu-label">HOTEL ROOMS</div>
+        <div class="room-item active" onclick="switchRoom('room1', this)">
+            <span>🛏️ Room 1</span>
+            <span class="badge occupied">OCCUPIED</span>
+        </div>
+        <div class="room-item" onclick="switchRoom('room2', this)">
+            <span>🛏️ Room 2</span>
+            <span class="badge vacant">VACANT</span>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <div class="topbar">
+            <span>📖 ROOM OVERVIEW</span>
+            <a href="/logout" style="color: var(--danger); text-decoration: none;">Logout</a>
+        </div>
+
+        <div class="content-body">
+            <div class="room-header">
+                <h1 class="room-title" id="room-title-display">Room 1</h1>
+                <div class="room-subtitle">
+                    <span><span class="status-dot"></span>Currently occupied</span>
+                    <span>ID: RM-<span id="room-id-display">0001</span></span>
+                </div>
+            </div>
+
+            <div class="tabs">
+                <div class="tab active" onclick="switchTab('sensors', this)">📉 Live Sensors</div>
+                <div class="tab" onclick="switchTab('access', this)">🚪 Access Control</div>
+            </div>
+
+            <div id="tab-sensors" class="grid-layout">
+                <div class="card">
+                    <div class="card-header">
+                        <div>
+                            <h3 class="card-title">Power Consumption</h3>
+                            <p class="card-subtitle">Live electrical current draw (ACS712 Sensor)</p>
+                        </div>
+                        <div class="power-box">
+                            <div class="power-label">⚡ LIVE DRAW</div>
+                            <div class="power-value"><span id="live-power">0.00</span> A</div>
+                        </div>
+                    </div>
+                    <div>
+                        <canvas id="energyChart" height="120"></canvas>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3 class="card-title">Access History</h3>
+                    <p class="card-subtitle" style="margin-bottom: 20px;">Real-time log of RFID scans and entry
+                        attempts.</p>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Timestamp</th>
+                                <th>Event</th>
+                                <th>RFID Tag</th>
+                            </tr>
+                        </thead>
+                        <tbody id="log-table-body">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="tab-access" class="access-control-area">
+                <div class="card" style="max-width: 800px; margin: 0 auto;">
+                    <div class="card-header" style="align-items: center;">
+                        <div>
+                            <h3 class="card-title">Access Control</h3>
+                            <p class="card-subtitle">Manage physical access to this room.</p>
+                        </div>
+                        <div id="lock-badge" class="lock-badge">SECURED</div>
+                    </div>
+
+                    <div class="lock-container">
+                        <div id="lock-icon" class="lock-icon">🔒</div>
+                        <h3 id="lock-status-text" style="margin: 0 0 10px 0;">Door is currently closed</h3>
+                        <p style="color: var(--text-muted); font-size: 14px; margin: 0;">Override the physical door
+                            lock. Operations are logged for security auditing.</p>
+
+                        <div class="btn-group">
+                            <button class="btn btn-outline" onclick="controlDoor('close')">🔒 Lock Door</button>
+                            <button class="btn btn-primary" onclick="controlDoor('open')">🔓 Unlock Door</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <script>
+        const socket = io();
+        let currentRoom = 'room1'; // ค่าเริ่มต้น
+
+        // 1. จัดการ UI สลับ Tab
+        function switchTab(tabName, el) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            el.classList.add('active');
+
+            if (tabName === 'sensors') {
+                document.getElementById('tab-sensors').style.display = 'grid';
+                document.getElementById('tab-access').style.display = 'none';
+            } else {
+                document.getElementById('tab-sensors').style.display = 'none';
+                document.getElementById('tab-access').style.display = 'block';
+            }
+        }
+
+        // 2. จัดการ UI สลับห้อง
+        function switchRoom(roomName, el) {
+            document.querySelectorAll('.room-item').forEach(i => i.classList.remove('active'));
+            el.classList.add('active');
+            currentRoom = roomName;
+
+            // อัปเดตตัวหนังสือหัวเว็บ
+            const roomNum = roomName.replace('room', '');
+            document.getElementById('room-title-display').innerText = 'Room ' + roomNum;
+            document.getElementById('room-id-display').innerText = '000' + (roomNum === '101' ? '1' : '2');
+
+            // ล้างข้อมูลตารางเก่า
+            document.getElementById('log-table-body').innerHTML = '';
+
+            // แจ้ง Backend ขอประวัติใหม่ (อนาคตค่อยเขียน Backend รองรับ)
+            socket.emit('change_room', currentRoom);
+        }
+
+        // 3. กราฟ Power Consumption (สีไล่ระดับแบบในรูป)
+        const ctx = document.getElementById('energyChart').getContext('2d');
+        const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+        gradient.addColorStop(0, 'rgba(26, 31, 54, 0.2)');
+        gradient.addColorStop(1, 'rgba(26, 31, 54, 0)');
+
+        const energyChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10'], // ข้อมูลแกน X (ชั่วคราว)
+                datasets: [{
+                    label: 'Current (A)',
+                    data: [0.3, 0.28, 0.15, 0.55, 0.12, 0.38, 0.16, 0.58, 0.2, 0.45],
+                    borderColor: '#1a1f36',
+                    backgroundColor: gradient,
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: { display: false },
+                    y: { beginAtZero: true, border: { display: false }, grid: { color: '#f3f4f6' } }
+                },
+                plugins: { legend: { display: false } }
+            }
+        });
+
+        // 4. รับข้อมูลจาก Backend (ประตู / RFID)
+        socket.on('door_update', (data) => {
+            if (data.room === currentRoom) {
+                const isOp = data.status.toLowerCase() === 'open';
+
+                // อัปเดตหน้า Access Control
+                const lockIcon = document.getElementById('lock-icon');
+                const lockBadge = document.getElementById('lock-badge');
+                const lockText = document.getElementById('lock-status-text');
+
+                if (isOp) {
+                    lockIcon.className = 'lock-icon unlocked'; lockIcon.innerText = '🔓';
+                    lockBadge.className = 'lock-badge unlocked'; lockBadge.innerText = 'UNLOCKED';
+                    lockText.innerText = 'Door is currently open';
+                } else {
+                    lockIcon.className = 'lock-icon'; lockIcon.innerText = '🔒';
+                    lockBadge.className = 'lock-badge'; lockBadge.innerText = 'SECURED';
+                    lockText.innerText = 'Door is currently closed';
+                }
+
+                // อัปเดตตาราง Access History
+                let eventIcon = isOp ? '<span style="color:#10b981;">🟢</span>' : '<span style="color:#ef4444;">🔴</span>';
+                let eventText = isOp ? 'Unlocked' : 'Locked';
+
+                const tbody = document.getElementById('log-table-body');
+                const row = tbody.insertRow(0);
+                row.innerHTML = `
+                    <td style="color:var(--text-muted);">${data.Timestamp || new Date().toLocaleTimeString('th-TH')}</td>
+                    <td>${eventIcon} ${eventText}</td>
+                    <td><span class="tag-badge">${data.RFID || data.source || 'Admin'}</span></td>
+                `;
+            }
+        });
+
+        // 5. รับข้อมูล Power (เอาไปใส่กราฟ)
+        socket.on('power_update', (data) => {
+            if (data.room === currentRoom) {
+                document.getElementById('live-power').innerText = data.current.toFixed(2);
+
+                // เลื่อนกราฟ
+                energyChart.data.datasets[0].data.shift();
+                energyChart.data.datasets[0].data.push(data.current);
+                energyChart.update();
+            }
+        });
+
+        // 6. ส่งคำสั่งเปิด/ปิด
+        function controlDoor(command) {
+            socket.emit('send_control', { room: currentRoom, command: command });
+        }
+    </script>
+</body>
+
+</html>

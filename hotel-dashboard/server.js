@@ -3,85 +3,123 @@ const http = require('http');
 const { Server } = require('socket.io');
 const mqtt = require('mqtt');
 const mysql = require('mysql2');
+const session = require('express-session');
 
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
-// 1. ให้ Node.js เสิร์ฟไฟล์ HTML/CSS จากโฟลเดอร์ public
-app.use(express.static('public'));
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
+app.use(session({ secret: 'hotel-secret-key', resave: false, saveUninitialized: true }));
+app.use('/assets', express.static('public'));
 
 // ==========================================
-// 1. ตั้งค่าเชื่อมต่อ MySQL Database
+// 1. Database Setup (สร้าง 3 ตารางตาม Flowchart)
 // ==========================================
-//const db = mysql.createPool({
-//    host: 'mysql', // วิ่งไปหา Service ชื่อ mysql ใน Docker ได้เลย
-//    user: 'root',
-//    password: 'hotel123', // ⚠️ เปลี่ยนให้ตรงกับ MYSQL_ROOT_PASSWORD ในไฟล์ .env ของคุณ
-//    database: 'hotel_db',
-//    waitForConnections: true,
-//    connectionLimit: 10,
-//   queueLimit: 0
-//});
-
-// สร้าง Table อัตโนมัติ (ถ้ายังไม่มี)
-//const initDB = () => {
-    // ตารางเก็บประวัติการใช้บัตร RFID
-//    const createRfidTable = `
-//        CREATE TABLE IF NOT EXISTS access_logs (
-//            id INT AUTO_INCREMENT PRIMARY KEY,
-//            rfid_uid VARCHAR(50) NOT NULL,
-//            timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-//        )
-//    `;
-    // ตารางเก็บค่ากระแสไฟจาก ACS712
-//    const createSensorTable = `
-//        CREATE TABLE IF NOT EXISTS sensor_logs (
-//            id INT AUTO_INCREMENT PRIMARY KEY,
-//            current_amp FLOAT NOT NULL,
-//            timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-//        )
-//    `;
-//    db.query(createRfidTable, (err) => { if(err) console.error("RFID DB Error:", err); });
-//    db.query(createSensorTable, (err) => { if(err) console.error("Sensor DB Error:", err); });
-//    console.log("🗄️ Database & Tables Ready!");
-//};
-//initDB();
-
-// 2. ตั้งค่าเชื่อมต่อ MQTT Broker (ใช้ DuckDNS หรือ IP เซิร์ฟเวอร์คุณ)
-const mqttClient = mqtt.connect('mqtt://recasa888.duckdns.org:1883', {
-    username: 'm5stack', // รหัสที่คุณเพิ่งตั้งไป
-    password: '1234'
+const db = mysql.createPool({
+    host: 'mysql', user: 'root', password: 'hotel123', database: 'hotel_db',
+    waitForConnections: true, connectionLimit: 10, queueLimit: 0
 });
+
+const initDB = () => {
+    // ตาราง 1: ลงทะเบียนบัตร RFID
+    db.query(`CREATE TABLE IF NOT EXISTS rfid_register (
+        id INT AUTO_INCREMENT PRIMARY KEY, room VARCHAR(20), rfid_uid VARCHAR(50), timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )`);
+    // ตาราง 2: ประวัติการเปิด/ปิดประตู
+    db.query(`CREATE TABLE IF NOT EXISTS door_event (
+        id INT AUTO_INCREMENT PRIMARY KEY, room VARCHAR(20), status VARCHAR(20), source VARCHAR(50), rfid_uid VARCHAR(50), timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )`);
+    // ตาราง 3: การใช้พลังงาน
+    db.query(`CREATE TABLE IF NOT EXISTS power_consumption (
+        id INT AUTO_INCREMENT PRIMARY KEY, room VARCHAR(20), current FLOAT, timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )`);
+    console.log("🗄️ Database Tables (Register, Event, Power) Ready!");
+};
+initDB();
+
+// ==========================================
+// 2. MQTT Setup (รับ JSON)
+// ==========================================
+const mqttClient = mqtt.connect('mqtt://mqtt:1883', { username: 'm5stack', password: '1234' });
 
 mqttClient.on('connect', () => {
     console.log('🔗 Connected to MQTT Broker!');
-    // พอต่อติด ให้ Subscribe รอรับข้อมูลจากทุกห้อง
-    mqttClient.subscribe('room/#'); 
+    mqttClient.subscribe('m5/+/doorstatus'); // ดักฟังสถานะประตูทุกห้อง
+    mqttClient.subscribe('m5/+/power');      // ดักฟังกระแสไฟทุกห้อง
 });
 
-// 3. เวลามีข้อมูลส่งมาจาก M5Stack ผ่าน MQTT
 mqttClient.on('message', (topic, message) => {
-    const data = message.toString();
-    console.log(`📥 Received: ${topic} -> ${data}`);
-    
-    // โยนข้อมูลที่ได้ ทะลุไปที่หน้าเว็บ HTML ทันที (ผ่าน Socket.io)
-    io.emit('sensor_data', { topic: topic, value: data });
+    try {
+        const payload = JSON.parse(message.toString()); // แปลงข้อความเป็น JSON Object
+        console.log(`📥 Received from [${topic}]:`, payload);
+
+        const parts = topic.split('/');
+        const roomNo = parts[1]; // เช่น room1
+        const topicType = parts[2]; // เช่น doorstatus หรือ power
+
+        if (topicType === 'doorstatus') {
+            // โยนข้อมูลขึ้นหน้าเว็บ
+            io.emit('door_update', payload);
+
+            if (payload.Register === true) {
+                // ถ้าโหมด Register = true ให้บันทึกเข้าตาราง rfid_register
+                if (payload.RFID) {
+                    db.query('INSERT INTO rfid_register (room, rfid_uid) VALUES (?, ?)', [roomNo, payload.RFID]);
+                    console.log(`💾 [DB] Registered new RFID: ${payload.RFID} for ${roomNo}`);
+                }
+            } else {
+                // ถ้าโหมด Register = false ให้บันทึกเข้าตาราง door_event
+                let source = "Unknown";
+                if (payload.M5 === true) source = "M5 Screen";
+                else if (payload.RFID) source = "RFID Card";
+
+                db.query('INSERT INTO door_event (room, status, source, rfid_uid) VALUES (?, ?, ?, ?)',
+                    [roomNo, payload.status, source, payload.RFID]);
+                console.log(`💾 [DB] Door Event: ${payload.status} by ${source} at ${roomNo}`);
+            }
+        }
+        else if (topicType === 'power') {
+            io.emit('power_update', payload);
+            db.query('INSERT INTO power_consumption (room, current) VALUES (?, ?)', [roomNo, payload.current]);
+        }
+    } catch (error) {
+        console.error("❌ Failed to parse JSON or DB Error:", error);
+    }
 });
 
-// 4. เวลามีคนเปิดหน้าเว็บ และกดปุ่มบนหน้าเว็บ
+// ==========================================
+// 3. ระบบ Login & Web Routing
+// ==========================================
+app.get('/', (req, res) => req.session.loggedIn ? res.sendFile(__dirname + '/public/dashboard.html') : res.sendFile(__dirname + '/public/login.html'));
+app.post('/login', (req, res) => {
+    if (req.body.password === '1234') { req.session.loggedIn = true; res.redirect('/'); }
+    else res.send('<script>alert("Wrong password!"); window.location.href="/";</script>');
+});
+app.get('/logout', (req, res) => { req.session.destroy(); res.redirect('/'); });
+
+// ==========================================
+// 4. WebSocket (รับคำสั่งจาก Dashboard)
+// ==========================================
 io.on('connection', (socket) => {
-    console.log('💻 User connected to Dashboard');
-    
-    // รอรับคำสั่งจากปุ่มกดหน้า HTML
-    socket.on('send_control', (payload) => {
-        // ยิงคำสั่งกลับไปที่ MQTT เพื่อให้ M5Stack รับไปเปิดประตู
-        mqttClient.publish('room/door_control', payload);
-        console.log(`📤 Command Sent: ${payload}`);
+    console.log('💻 Dashboard Connected');
+
+    // เมื่อกดปุ่มหน้าเว็บ (ทำตาม Flowchart ซ้ายสุด)
+    socket.on('send_control', (data) => {
+        // 1. สั่งเปิด/ปิด ไปยัง MQTT
+        mqttClient.publish(`m5/${data.room}/control`, data.command);
+        console.log(`📤 Dashboard Sent Control: ${data.command} to ${data.room}`);
+
+        // 2. บันทึกลง Database ว่าสั่งจาก Dashboard
+        db.query('INSERT INTO door_event (room, status, source, rfid_uid) VALUES (?, ?, ?, ?)',
+            [data.room, data.command, 'Dashboard', null]);
+
+        // ส่งกลับไปอัปเดตตารางหน้าเว็บให้เห็นด้วย
+        io.emit('door_update', {
+            Register: false, room: data.room, status: data.command, M5: false, RFID: 'Dashboard (Admin)', Timestamp: new Date().toLocaleTimeString('th-TH')
+        });
     });
 });
 
-// เปิดเซิร์ฟเวอร์ที่พอร์ต 3000
-server.listen(3000, () => {
-    console.log('🌐 Web Server is running at http://localhost:3000');
-});
+server.listen(3000, () => console.log('🌐 Server running on port 3000'));
