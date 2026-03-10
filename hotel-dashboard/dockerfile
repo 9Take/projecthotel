@@ -9,7 +9,8 @@ WORKDIR /usr/src/app
 
 # ก๊อปปี้ไฟล์ package.json ไปก่อนเพื่อติดตั้งไลบรารี
 COPY package*.json ./
-RUN npm install
+RUN npm install 
+# RUN npm install express-session
 
 # ก๊อปปี้โค้ดทั้งหมดตามเข้าไป
 #COPY . .

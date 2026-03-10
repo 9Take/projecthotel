@@ -35,6 +35,7 @@ services:
       # ดึงรหัสผ่านจากไฟล์ .env ที่เราทำไว้
       - MYSQL_ROOT_PASSWORD=${DB_ROOT_PASSWORD}
       - MYSQL_DATABASE=${DB_NAME}
+      - TZ=Asia/Bangkok
     ports:
       - "3306:3306"
     volumes:

@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Guest Booking</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background: #f8f9fa;
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .booking-card {
+            background: white;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            width: 100%;
+            max-width: 400px;
+            border: 1px solid #e5e7eb;
+        }
+
+        h2 {
+            margin-top: 0;
+            color: #1a1f36;
+            text-align: center;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            font-size: 14px;
+            color: #8792a2;
+        }
+
+        input,
+        select {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 20px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            box-sizing: border-box;
+            font-family: 'Inter';
+        }
+
+        .btn {
+            width: 100%;
+            padding: 12px;
+            background: #1a1f36;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .btn:hover {
+            background: #10b981;
+        }
+
+        .logout {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+            color: #ef4444;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="booking-card">
+        <h2>🛎️ Book a Room</h2>
+        <form action="/api/book" method="POST">
+            <label>Full Name</label>
+            <input type="text" name="guest_name" required placeholder="เช่น นาย ก.">
+
+            <label>Select Room</label>
+            <select name="room_no" required>
+                <option value="room101">Room 101</option>
+                <option value="room102">Room 102</option>
+            </select>
+
+            <label>Check-in Date</label>
+            <input type="date" name="checkin_date" required>
+
+            <button type="submit" class="btn">Confirm Booking</button>
+        </form>
+        <a href="/logout" class="logout">Logout</a>
+    </div>
+</body>
+
+</html>
