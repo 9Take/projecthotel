@@ -1,0 +1,35 @@
+# ========================
+# Git & Docker configs
+# ========================
+.git
+.gitignore
+.dockerignore
+Dockerfile
+docker-compose.yaml
+
+# ========================
+# Security
+# ========================
+.env
+
+# ========================
+# Node.js 
+# (สำคัญ! ห้ามก๊อปปี้ node_modules จากเครื่องโฮสต์เข้าไปทับเด็ดขาด)
+# ========================
+node_modules/
+npm-debug.log
+
+# ========================
+# Data Volumes & Local Logs (ข้ามไปเลยเพราะไฟล์ใหญ่/รันใหม่ในระบบ)
+# ========================
+mysql_data/
+nodered_data/
+mosquitto/data/
+mosquitto/log/
+mosquitto/config/passwd
+hotel_data_log.csv  
+
+# ========================
+# Misc
+# ========================
+README.md

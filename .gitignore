@@ -1,24 +1,33 @@
-# ไม่นำข้อมูล Database ขึ้น Git เพราะไฟล์มีขนาดใหญ่และเปลี่ยนแปลงตลอดเวลา
+# ========================
+# Database & Services Data
+# ========================
 mysql_data/
-
-# ไม่นำข้อมูล Node-RED ขึ้น Git เพื่อป้องกันพวกไฟล์ credentials (รหัสผ่าน) หลุด
 nodered_data/
+hotel_data_log.csv
 
-#Node js
-# โฟลเดอร์ของ Node.js (ไฟล์มีขนาดใหญ่และรกมาก ให้ Git มองข้ามไปเลย)
-hotel-dashboard/node_modules/
-
-# ไม่นำไฟล์ Data และ Log ของ MQTT ขึ้น Git (แต่เราจะยังให้ Git เก็บโฟลเดอร์ mosquitto/config/ ไว้อยู่)
+# ========================
+# MQTT Broker
+# ========================
 mosquitto/data/
 mosquitto/log/
-mosquitto/congif/passwd
+mosquitto/config/passwd
 
-# ไฟล์ระบบของ OS
+# ========================
+# Node.js Backend
+# ========================
+node_modules/
+hotel-dashboard/node_modules/
+npm-debug.log
+
+# ========================
+# Security & Credentials
+# ========================
+.env
+# เปลี่ยนชื่อโฟลเดอร์ M5Stack ของคุณให้ตรงกับของจริง (ใช้ "" คลุมถ้ามีเว้นวรรค)
+"m5 and esp32/secrets.h"
+
+# ========================
+# OS System Files
+# ========================
 .DS_Store
 Thumbs.db
-
-# docker
-.dockerignore
-
-# env(password or secret)
-.env
