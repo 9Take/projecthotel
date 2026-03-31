@@ -1,51 +1,51 @@
-# 🔧 QUICK START GUIDE - การติดตั้ง Lumina Dashboard
+# 🔧 QUICK START GUIDE - Installation Instructions
 
-## 🐳 วิธีที่ 1: ใช้ Docker (ง่ายที่สุด ⭐)
+## 🐳 Method 1: Using Docker (Easiest ⭐)
 
-### Step 1: ดาวน์โหลด Project
+### Step 1: Download Project
 ```bash
 git clone <your-repo-url>
 cd projecthotel
 ```
 
-### Step 2: ตั้งค่า Environment Variables
+### Step 2: Configure Environment Variables
 ```bash
 # Copy template
 cp .env.example .env
 
-# เปิดแก้ไข (ไม่บังคับ ใช้ default ได้)
+# Edit (optional - defaults work fine)
 nano .env
 ```
 
-**คำแนะนำ**: แก้ไข `SECRET_KEY` และ password ให้ปลอดภัย
+**Recommendation:** Change `SECRET_KEY` and passwords for security
 
-### Step 3: เริ่มต้น Docker Services
+### Step 3: Start Docker Services
 ```bash
-# เริ่มต้น services ทั้งหมด (ครั้งแรกจะดาวน์โหลด images)
+# Start all services (first time will download images)
 docker compose up -d
 
-# เช็คสถานะ (ควร "Up" ทั้งหมด)
+# Check status (all should show "Up")
 docker compose ps
 
-# ดู logs
+# View logs
 docker compose logs -f
 ```
 
-### Step 4: เข้า Dashboard
-- เปิด http://localhost:3000 ในเบราว์เซอร์
+### Step 4: Access Dashboard
+- Open http://localhost:3000 in browser
 - Login:
   - Username: `admin`
   - Password: `admin123`
 
-### ✅ เสร็จแล้ว! 🎉
+### ✅ Done! 🎉
 
 ---
 
-## 🖥️ วิธีที่ 2: ติดตั้งแบบ Manual (บน Linux/Mac)
+## 🖥️ Method 2: Manual Installation (Linux/Mac)
 
-### Step 1: ติดตั้ง Prerequisites
+### Step 1: Install Prerequisites
 
-#### 1.1 ติดตั้ง Node.js
+#### 1.1 Install Node.js
 ```bash
 # Ubuntu/Debian
 curl -sL https://deb.nodesource.com/setup_18.x | sudo -E bash -
@@ -55,7 +55,7 @@ sudo apt-get install -y nodejs
 brew install node
 ```
 
-#### 1.2 ติดตั้ง MySQL
+#### 1.2 Install MySQL
 ```bash
 # Ubuntu/Debian
 sudo apt-get install mysql-server
@@ -65,7 +65,7 @@ brew install mysql@8.0
 brew services start mysql@8.0
 ```
 
-#### 1.3 ติดตั้ง MQTT Broker
+#### 1.3 Install MQTT Broker
 ```bash
 # Ubuntu/Debian
 sudo apt-get install mosquitto mosquitto-clients
@@ -79,10 +79,10 @@ brew services start mosquitto
 
 ### Step 2: Setup Database
 ```bash
-# เข้า MySQL shell
+# Enter MySQL shell
 mysql -u root
 
-# รัน SQL เหล่านี้:
+# Run these SQL commands:
 CREATE DATABASE hotel_db;
 USE hotel_db;
 
@@ -118,82 +118,82 @@ CREATE TABLE IF NOT EXISTS rfid_register (
   timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-# ออก MySQL
+# Exit MySQL
 EXIT;
 ```
 
-### Step 3: ตั้งค่า Node.js Server
+### Step 3: Setup Node.js Server
 ```bash
-# ไปยัง project directory
+# Navigate to project directory
 cd projecthotel/hotel-dashboard
 
-# ติดตั้ง dependencies
+# Install dependencies
 npm install
 
-# Copy .env
+# Copy environment file
 cp ../.env.example ../.env
 ```
 
-### Step 4: แก้ไข .env
+### Step 4: Edit .env
 ```bash
 nano ../.env
 ```
 
-เปลี่ยนค่าเหล่านี้:
+Change these values:
 ```env
-DB_HOST=localhost          # (ไม่ใช่ mysql)
-MQTT_HOST=localhost        # (ไม่ใช่ mqtt)
+DB_HOST=localhost          # (not 'mysql')
+MQTT_HOST=localhost        # (not 'mqtt')
 ```
 
-### Step 5: เริ่มต้น Server
+### Step 5: Start Server
 ```bash
-# จากในโฟลเดอร์ hotel-dashboard
+# From hotel-dashboard directory
 npm start
 
-# หรือใช้ nodemon สำหรับ development
+# Or use nodemon for development
 npm install -D nodemon
 npx nodemon server.js
 ```
 
-### Step 6: เข้า Dashboard
-- เปิด http://localhost:3000
-- Login ด้วย admin credentials
+### Step 6: Access Dashboard
+- Open http://localhost:3000
+- Login with admin credentials
 
 ---
 
-## 📱 การ Upload Firmware ไปยัง M5 Device
+## 📱 Upload Firmware to M5 Device
 
-### Step 1: ดาวน์โหลด Arduino IDE
-- ไปที่ https://www.arduino.cc/en/software
-- ติดตั้งตามเขต OS
+### Step 1: Download Arduino IDE
+- Visit https://www.arduino.cc/en/software
+- Install for your OS
 
-### Step 2: ตั้งค่า M5Stack Board
+### Step 2: Setup M5Stack Board
 ```
 Arduino IDE ➜ File ➜ Preferences
 
-URL ที่ต้องเพิ่ม:
+Add this URL:
 https://m5stack.oss-cn-shenzhen.aliyuncs.com/resource/arduino/package_m5stack_index.json
 
-OU File ➜ Boards Manager ➜ ค้นหา "M5Stack" ➜ Install
+File ➜ Boards Manager ➜ Search "M5Stack" ➜ Install
 ```
 
-### Step 3: เตรียม Firmware
+### Step 3: Prepare Firmware
 ```
-1. เปิด Arduino IDE
+1. Open Arduino IDE
 2. File ➜ Open ➜ m5 and esp32/m5.ino
-3. เพิ่มไลบรารี่ที่ต้อง:
+3. Add required libraries:
    Sketch ➜ Include Library ➜ Manage Libraries
    - M5CoreS3
    - PubSubClient
    - mbedtls
 ```
 
-### Step 4: สร้างไฟล์ WiFi Config
-สร้างไฟล์ `m5 and esp32/secret.h`:
+### Step 4: Create WiFi Config File
+Create `m5 and esp32/secret.h`:
 ```cpp
 #define ssid "YOUR_WIFI_NAME"
 #define password "YOUR_WIFI_PASSWORD"
-#define mqtt_server "192.168.1.100"  // IP ของ Server
+#define mqtt_server "192.168.1.100"  // Your Server IP
 #define mqtt_port 1883
 #define mqtt_user "mosquitto"
 #define mqtt_pass "mosquitto"
@@ -201,15 +201,15 @@ OU File ➜ Boards Manager ➜ ค้นหา "M5Stack" ➜ Install
 
 ### Step 5: Upload
 ```
-1. ต่อ M5 ด้วย USB Cable
+1. Connect M5 with USB Cable
 2. Tools ➜ Select Board ➜ M5Stack CoreS3
-3. Tools ➜ Port ➜ /dev/ttyUSB0 (หรือ COM port บน Windows)
+3. Tools ➜ Port ➜ /dev/ttyUSB0 (or COM port on Windows)
 4. Sketch ➜ Upload
-5. เช็ค Serial Monitor (115200 baud) ว่า connect ได้หรือไม่
+5. Check Serial Monitor (115200 baud) for connection status
 ```
 
-### Step 6: ทดสอบ M5 Device
-ดู Serial Monitor:
+### Step 6: Test M5 Device
+View Serial Monitor output:
 ```
 [INFO] Connecting WiFi...
 [OK] WiFi Connected!
@@ -224,7 +224,7 @@ OU File ➜ Boards Manager ➜ ค้นหา "M5Stack" ➜ Install
 
 ### ❌ Docker Container Crashes
 ```bash
-# ดู error
+# View error logs
 docker compose logs hotel_dashboard
 
 # Rebuild images
@@ -235,77 +235,77 @@ docker compose up -d
 
 ### ❌ Cannot Connect to MQTT
 ```bash
-# เช็ค MQTT บ่านกำลัง run
+# Check if MQTT is running
 docker compose logs hotel_mqtt
 
-# ทดสอบ connection
+# Test MQTT connection
 mosquitto_pub -h localhost -p 1883 -t "test" -m "hello"
 ```
 
 ### ❌ MySQL Connection Error
 ```bash
-# ตรวจสอบ password ถูกต้อง
-# เช็ค DB_HOST ใน .env
+# Verify password is correct
+# Check DB_HOST in .env
 
-# ลองเข้า MySQL โดยตรง
+# Try to connect directly
 mysql -h localhost -u root -p
 
-# ถ้าลืมรหัสผ่าน (Docker):
-docker compose exec mysql mysql -u root  # ไม่มี password
+# If password lost (Docker):
+docker compose exec mysql mysql -u root  # No password needed
 ```
 
-### ❌ Dashboard ยังไม่ load
+### ❌ Dashboard Not Loading
 ```bash
-# รอให้ server พร้อม (ครั้งแรกใช้เวลา 30-60 วินาที)
+# Wait for server to start (first time takes 30-60 seconds)
 docker compose logs -f hotel_dashboard | grep "Server running"
 
-# Refresh browser หลังจาก "Server running" ขึ้น
+# Refresh browser after "Server running" appears
 ```
 
-### ❌ M5 ไม่ Connect WiFi
+### ❌ M5 Won't Connect to WiFi
 ```
-1. เช็ค WiFi name/password ใน secret.h
-2. ดู Serial Monitor (Baud: 115200)
-3. ตรวจสอบ M5 อยู่ในระหว่าง 2.4GHz WiFi (ไม่ใช่ 5GHz)
+1. Verify WiFi name/password in secret.h
+2. Check Serial Monitor (Baud: 115200)
+3. Make sure M5 is connecting to 2.4GHz WiFi (not 5GHz)
 ```
 
 ---
 
-## 🚀 คำสั่ง Useful
+## 🚀 Useful Commands
 
 ### Docker Commands
 ```bash
-# เดินทุกอย่าง
+# Start everything
 docker compose up -d
 
-# ปรับปรุง logs
+# View logs
 docker compose logs -f [service-name]
 
-# Restart บริการ
+# Restart a service
 docker compose restart hotel_dashboard
 
-# Stop ทั้งหมด
+# Stop everything
 docker compose down
 
-# ลบข้อมูล (BE CAREFUL!)
+# Remove all data (BE CAREFUL!)
 docker compose down -v
 ```
 
 ### Database Commands
 ```bash
-# เข้า MySQL
+# Enter MySQL
 docker compose exec mysql mysql -u root -photel123 hotel_db
 
-# ล้าง Door Events
+# Clear door events
 TRUNCATE TABLE door_event;
 
-# ดู Latest Events
+# View latest events
 SELECT * FROM door_event ORDER BY timestamp DESC LIMIT 10;
 ```
 
 ### MQTT Commands
 ```bash
-# Subscribe topic
+# Subscribe to topic
 docker compose exec mqtt mosquitto_sub -h localhost -t "m5/+/doorstatus"
 
 # Publish test message
@@ -316,21 +316,21 @@ docker compose exec mqtt mosquitto_pub -h localhost -t "test/msg" -m "hello"
 
 ## ✅ Verification Checklist
 
-- [ ] Docker Compose up ได้โดยไม่ error
-- [ ] ทั้ง 3 containers รัน (hotel_dashboard, mysql, mqtt)
-- [ ] http://localhost:3000 เข้าได้
-- [ ] Login ได้ด้วย admin/admin123
-- [ ] MySQL tables มีอยู่ 4 ตาราง
-- [ ] M5 Device upload firmware ได้
-- [ ] Serial Monitor แสดง "MQTT Connected"
-- [ ] Dashboard แสดง Room 1 & Room 2
-- [ ] M5 กดปุ่ม unlock → Dashboard แสดง updated เกิดขึ้น
+- [ ] Docker Compose starts without errors
+- [ ] All 3 containers are running (hotel_dashboard, mysql, mqtt)
+- [ ] Can access http://localhost:3000
+- [ ] Can login with admin/admin123
+- [ ] MySQL has 4 tables
+- [ ] M5 Device firmware uploaded successfully
+- [ ] Serial Monitor shows "MQTT Connected"
+- [ ] Dashboard shows Room 1 & Room 2
+- [ ] M5 button press → Dashboard updates realtime
 
 ---
 
-## 📞 ไม่สามารถแก้ไขได้?
+## 📞 Still Having Issues?
 
-ดู logs ด้วยคำสั่ง:
+Check logs with this command:
 ```bash
 # All services
 docker compose logs
@@ -344,11 +344,11 @@ docker compose logs hotel_mqtt        # MQTT
 docker compose logs -f
 ```
 
-และบอกสิ่งต่อไปนี้:
-- Error message ที่ทำให้คุณติ่ง
-- ผลลัพธ์ของ `docker compose ps`
-- ผลลัพธ์ของคำสั่ง logs
+**Please provide:**
+- Error message you're seeing
+- Output of `docker compose ps`
+- Output of `docker compose logs`
 
 ---
 
-**🎉 ขอบคุณที่ใช้ Lumina Dashboard!**
+**🎉 Thanks for using Lumina Hotel IoT Dashboard!**
