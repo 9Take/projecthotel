@@ -507,7 +507,7 @@ Server uses Bangkok Time (UTC+7) automatically, but M5 device may have incorrect
 **Project Name:** Group Smart Access and Room Management System via IoT Gateway
 **Project Type:** Computer Interface Final Project
 **Academic Year:** 2025 (Semester 2)
-**Institution:** [King Mongkut's University of Technology Thonburi (KMUTNB)](https://www.kmutnb.ac.th)
+**Institution:** [King Mongkut's University of Technology North Bangkok (KMUTNB)](https://www.kmutnb.ac.th)
 **Major:** Robotics Engineering (Year 3)
 **Department:** Faculty of Engineering
 
@@ -587,14 +587,14 @@ Special thanks to:
 ### 📞 Contact Information
 
 For questions or inquiries regarding this project:
-- 📧 Institution: King Mongkut's University of Technology Thonburi
+- 📧 Institution: King Mongkut's University of Technology North Bankok
 - 🏫 Department: Faculty of Engineering, Robotics Engineering Program
 - 📚 Course: Computer Interface (Final Project)
 
 ### 📋 License & Copyright
 
 © 2025 Smart Access and Room Management System via IoT Gateway Team
-King Mongkut's University of Technology Thonburi (KMUTNB)
+King Mongkut's University of Technology North Bangkok (KMUTNB)
 
 **Project Members:**
 - Thanpisit Banyam (6601023611035)
