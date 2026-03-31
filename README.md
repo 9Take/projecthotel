@@ -13,6 +13,7 @@
 - [การใช้งาน](#-การใช้งาน)
 - [คุณสมบัติ](#-คุณสมบัติ)
 - [Troubleshooting](#-troubleshooting)
+- [Team & Credits](#-team--credits)
 
 ---
 
@@ -487,6 +488,110 @@ MIT License - ใช้อย่างไรตามใจได้
 
 ---
 
-**Last Updated:** 31 March 2026
+## 👥 Team & Credits
+
+### 📌 Lumina Hotel IoT Dashboard System
+**Project Name:** Group Smart Access and Room Management System via IoT Gateway
+**Project Type:** Computer Interface Final Project
+**Academic Year:** 2025 (Semester 2)
+**Institution:** [King Mongkut's University of Technology Thonburi (KMUTNB)](https://www.kmutnb.ac.th)
+**Major:** Robotics Engineering (Year 3)
+**Department:** Faculty of Engineering
+
+### 👨‍💻 Team Members
+
+| Name | Student ID | Role |
+|------|-----------|------|
+| **Thanpisit Banyam** | 6601023611035 | Project Lead / System Architecture |
+| **Putthakhun Horthong** | 6601023621022 | Hardware & Firmware Development |
+| **Thitaree Siwapornchai** | 6601023620077 | Web Dashboard & Database |
+
+### 🛠️ Responsibilities
+
+**Thanpisit Banyam (6601023611035)**
+- Overall project design and architecture
+- System integration and testing
+- MQTT protocol implementation
+- Real-time WebSocket communication
+- IoT Gateway management
+
+**Putthakhun Horthong (6601023621022)**
+- M5CoreS3 & ESP32 firmware development
+- Smart door lock servo motor control
+- RFID reader integration & authentication
+- Power sensor (ACS712) calibration
+- Hardware debugging & optimization
+
+**Thitaree Siwapornchai (6601023620077)**
+- Web dashboard UI/UX design
+- Backend Node.js server development
+- MySQL database schema design
+- Authentication & security implementation
+- Real-time data monitoring & logging
+
+### 🏆 Acknowledgments
+
+Special thanks to:
+- **KMUTNB Faculty of Engineering** for providing resources and guidance
+- **Computer Interface Course Instructor** for mentorship and support
+- **KMUTNB IoT Laboratory** for equipment and testing facilities
+- **All support staff** who contributed to this project
+
+### 📚 Technologies & Tools Used
+
+**Software:**
+- Frontend: HTML5, CSS3, JavaScript, Socket.io
+- Backend: Node.js, Express.js, MySQL2, PubSubClient
+- Database: MySQL 5.7+
+- Messaging: MQTT (Eclipse Mosquitto)
+- Containerization: Docker, Docker Compose
+
+**Hardware:**
+- M5Stack CoreS3 (Main Gateway)
+- ESP32 (IoT Node Device)
+- RFID Reader Module
+- SG90 Servo Motor
+- ACS712 Current Sensor
+- USB Power Supply
+
+**Development Tools:**
+- Arduino IDE
+- VS Code
+- Git & GitHub
+- Docker Desktop
+- MySQL Workbench
+
+### 📄 Project Statistics
+
+- **Total Lines of Code:** 2000+
+- **Database Tables:** 4 (door_event, power_consumption, bookings, rfid_register)
+- **WebSocket Events:** 6 (door_update, power_update, history_data, etc.)
+- **MQTT Topics:** 3 (doorstatus, power, control)
+- **REST API Endpoints:** 5+ (login, logout, book, etc.)
+- **Development Time:** Semester 2, Academic Year 2025
+- **Team Size:** 3 Members
+
+### 📞 Contact Information
+
+For questions or inquiries regarding this project:
+- 📧 Institution: King Mongkut's University of Technology Thonburi
+- 🏫 Department: Faculty of Engineering, Robotics Engineering Program
+- 📚 Course: Computer Interface (Final Project)
+
+### 📋 License & Copyright
+
+© 2025 Smart Access and Room Management System via IoT Gateway Team
+King Mongkut's University of Technology Thonburi (KMUTNB)
+
+**Project Members:**
+- Thanpisit Banyam (6601023611035)
+- Putthakhun Horthong (6601023621022)
+- Thitaree Siwapornchai (6601023620077)
+
+**This project is developed as part of the Computer Interface course requirement.**
+Students retain the right to use this project for educational and research purposes.
+For commercial use or redistribution, please contact KMUTNB administration.
+
+---
 **Version:** 1.0.0
 **Status:** ✅ Production Ready
