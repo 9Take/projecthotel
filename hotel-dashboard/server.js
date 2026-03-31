@@ -33,6 +33,7 @@ const db = mysql.createPool({
 });
 
 const initDB = () => {
+    db.query("SET time_zone='+07:00'"); // 🌟 ตั้ง timezone เป็น Bangkok (UTC+7)
     db.query(`CREATE TABLE IF NOT EXISTS rfid_register (id INT AUTO_INCREMENT PRIMARY KEY, room VARCHAR(20), rfid_uid VARCHAR(50), timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP)`);
     db.query(`CREATE TABLE IF NOT EXISTS door_event (id INT AUTO_INCREMENT PRIMARY KEY, room VARCHAR(20), status VARCHAR(20), source VARCHAR(50), rfid_uid VARCHAR(50), timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP)`);
     db.query(`CREATE TABLE IF NOT EXISTS power_consumption (id INT AUTO_INCREMENT PRIMARY KEY, room VARCHAR(20), current_amp FLOAT, power_watt FLOAT, timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP)`);
@@ -94,13 +95,24 @@ mqttClient.on('message', (topic, message) => {
 
         // --- ทำงานปกติ (บันทึกลง Database & โชว์หน้าเว็บ) ---
         if (topicType === 'doorstatus') {
-            io.emit('door_update', payload);
+            // 🌟 ใช้เวลาจากเซิร์ฟเวอร์แทนเวลาจาก device
+            const serverTimestamp = new Date().toLocaleString('th-TH');
+
+            // 🌟 กำหนด source สำหรับ door_update event
+            let source = "Unknown";
+            if (payload.M5 === true) source = "M5 Screen";
+            else if (payload.RFID) source = "RFID Card";
+
+            // 🌟 เพิ่ม source และ timestamp ให้ door_update event
+            io.emit('door_update', { ...payload, source: source, Timestamp: serverTimestamp });
+
+            // 🌟 ถ้าสั่งจาก Dashboard ไปแล้ว ให้ข้ามการบันทึกซ้ำ
+            if (payload.isFromDashboard === true) {
+                return; // ⛔ skip บันทึก Database เพราะเซิร์ฟเวอร์บันทึกไปแล้ว
+            }
             if (payload.Register === true && payload.RFID) {
                 db.query('INSERT INTO rfid_register (room, rfid_uid) VALUES (?, ?)', [roomNo, payload.RFID]);
             } else {
-                let source = "Unknown";
-                if (payload.M5 === true) source = "M5 Screen";
-                else if (payload.RFID) source = "RFID Card";
                 db.query('INSERT INTO door_event (room, status, source, rfid_uid) VALUES (?, ?, ?, ?)', [roomNo, payload.status, source, payload.RFID]);
             }
         }
@@ -150,9 +162,8 @@ io.on('connection', (socket) => {
     socket.on('request_power_history', (room) => db.query('SELECT current_amp, power_watt FROM power_consumption WHERE room = ? ORDER BY timestamp DESC LIMIT 10', [room], (err, res) => { if (!err) socket.emit('power_history_data', { room: room, data: res.reverse() }); }));
 
     socket.on('send_control', (data) => {
-        mqttClient.publish(`m5/${data.room}/control`, data.command);
+        mqttClient.publish(`m5/${data.room}/control`, JSON.stringify({ command: data.command, isFromDashboard: true }));
         db.query('INSERT INTO door_event (room, status, source, rfid_uid) VALUES (?, ?, ?, ?)', [data.room, data.command, 'Dashboard', null]);
-        io.emit('door_update', { Register: false, room: data.room, status: data.command, M5: false, RFID: 'Dashboard (Admin)', Timestamp: new Date().toLocaleTimeString('th-TH') });
     });
 });
 

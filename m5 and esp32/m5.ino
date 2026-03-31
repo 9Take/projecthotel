@@ -54,6 +54,7 @@ String uidRoom2 = "";
 
 unsigned long lastWifiAttempt = 0;
 unsigned long lastMqttAttempt = 0;
+bool commandFromDashboard = false; // 🌟 เพิ่ม: เก็บสถานะว่ากดจาก Dashboard หรือไม่
 
 // 🌟 ฟังก์ชันสร้าง Hash แบบ SHA-256
 String calculateHash(String payload) {
@@ -431,9 +432,9 @@ void loop() {
             "{\"Register\":false,\"room\":\"%s\",\"status\":\"open\",\"M5\":true,\"RFID\":null,\"Timestamp\":\"%s\",\"hash\":\"%s\"}", 
             rName.c_str(), timeString, myHash.c_str());
         }
-      } else { 
-        snprintf(jsonBuffer, sizeof(jsonBuffer), 
-          "{\"Register\":false,\"room\":\"%s\",\"status\":\"closed\",\"M5\":false,\"RFID\":null,\"Timestamp\":\"%s\",\"hash\":\"%s\"}", 
+      } else {
+        snprintf(jsonBuffer, sizeof(jsonBuffer),
+          "{\"Register\":false,\"room\":\"%s\",\"status\":\"closed\",\"M5\":true,\"RFID\":null,\"Timestamp\":\"%s\",\"hash\":\"%s\"}",
           rName.c_str(), timeString, myHash.c_str());
         
         CoreS3.Display.fillRect(0, 120, 320, 35, BLACK);
